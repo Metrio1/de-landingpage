@@ -1,0 +1,27 @@
+:root {
+  --borderRadius: 0.625rem;
+  --borderRadiusBig: 12.5rem;
+
+  --baseFontSize: 16px;
+  --fontFamilyBase: 'Gilroy', sans-serif;
+  --lineSpacingBase: 0.05rem;
+
+  --containerWidth: 58.75rem;
+  --containerPaddingX: 1.5rem;
+
+  --cardWidth: 23.75rem;
+  --cardPadding: 3rem;
+
+  --inputHeight: 4.5rem;
+  --inputHeightTablet: 3.75rem;
+  --inputHeightMobile: 3rem;
+  --buttonHeight: 3.5rem;
+  --buttonHeightBig: 4.5rem;
+
+  --logoClientWidth: 14.7rem;
+  --logoClientHeight: 8rem;
+
+  --transitionEffectCard: 0.4s ease-in-out;
+  --transitionEffect: 0.3s ease-in-out;
+  --transitionEffectFast: 0s ease-in-out;
+}

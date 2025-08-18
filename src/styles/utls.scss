@@ -1,3 +1,9 @@
+.container {
+  max-width: calc(var(--containerWidth) + var(--containerPaddingX) * 2);
+  margin-inline: auto;
+  padding-inline: var(--containerPaddingX);
+}
+
 .visuallyHidden {
   position: absolute !important;
   width: 1px !important;

@@ -1,0 +1,35 @@
+@use "@styles/mixins" as *;
+@use "@styles/media" as *;
+
+.button {
+  @include flexCenter(true);
+  @include resetButton;
+  height: var(--buttonHeight);
+  padding-inline: 3rem;
+  font-size: 1rem;
+  color: var(--colorWhite);
+  background-color: var(--colorPrimary);
+  border-radius: var(--borderRadius);
+  white-space: nowrap;
+  box-shadow: var(--boxShadowButton);
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:not(:disabled) {
+    @include hover {
+      color: var(--colorWhite);
+      box-shadow: var(--boxShadowButton);
+      background-color: var(--colorButtonHover);
+    }
+
+    &:active {
+      color: var(--colorWhite);
+      box-shadow: var(--boxShadowButton);
+      background-color: var(--colorButtonActive);
+    }
+  }
+}

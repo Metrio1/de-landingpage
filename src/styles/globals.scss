@@ -1,0 +1,61 @@
+@use "@styles/mixins" as *;
+@use "@styles/media" as *;
+
+body {
+  @include fluidText(18, 14);
+  font-family: var(--fontFamilyBase);
+  font-weight: 400;
+  font-size: var(--baseFontSize);
+  line-height: 1.62;
+  letter-spacing: var(--lineSpacingBase);
+  color: var(--colorDarkBlue);
+  background-color: var(--colorWhite);
+}
+
+a,
+button,
+input,
+textarea {
+  transition:
+          background-color var(--transitionEffect),
+          color var(--transitionEffect),
+          box-shadow var(--transitionEffect),
+          transform var(--transitionEffect);
+}
+
+
+a {
+  @include resetLink();
+  @include hover {
+    color: var(--colorPrimaryLink);
+  }
+}
+
+h1 {
+  @include fluidText(55, 35);
+  font-family: 'Times New Roman', sans-serif;
+  letter-spacing: 0.17rem;
+  line-height: 1.37;
+  font-weight: 700;
+}
+
+h2 {
+  @include fluidText(36, 30);
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: 0.1rem;
+  color: var(--colorBlue);
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.06rem;
+  line-height: 1.5;
+}
+
+p {
+  opacity: 0.6;
+  line-height: 1.62;
+  letter-spacing: var(--lineSpacingBase);
+}
