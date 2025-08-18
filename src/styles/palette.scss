@@ -1,0 +1,45 @@
+:root {
+  --colorFrenchMauve: #D067C9;
+  --colorVermilion: #FF2E2E;
+  --colorCarmine: #991A1A;
+  --colorHunterGreen: #2D5F22;
+  --colorWhiteTransparent: #FFFFFF33;
+
+  --colorDarkBlueTransparent: #1F3F6833;
+  --colorYaleBlue: #1F3F68;
+  --colorLapisLazuli: #316099;
+  --colorBiceBlue: #3B6FA6;
+  --colorAzul: #356EAD;
+  --colorSteelBlue: #4A84BE;
+  --colorBlueGray: #5A98D0;
+  --colorJordyBlue: #98C3E8;
+  --colorUranianBlue: #b3d3f3;
+  --colorAiceBlue: #f0f6ff;
+  --colorColumbiaBlue: #dae8fa;
+  --colorWhiteSmoke: #F2F2F2;
+  --colorWhite: #FFFFFF;
+
+  --colorPrimaryLink: var(--colorFrenchMauve);
+  --colorDanger: var(--colorVermilion);
+  --colorDangerDark: var(--colorCarmine);
+  --colorSuccess: var(--colorHunterGreen);
+  --colorDarkBlue: var(--colorYaleBlue);
+  --colorBlue: var(--colorLapisLazuli);
+  --colorSecondary: var(--colorAzul);
+  --colorPrimary: var(--colorBlueGray);
+  --colorLightBlue: var(--colorJordyBlue);
+  --colorGrayLight: var(--colorWhiteSmoke);
+
+  --colorButtonHover: var(--colorSteelBlue);
+  --colorButtonActive: var(--colorBiceBlue);
+  --colorBurgerButtonHover: var(--colorAiceBlue);
+  --colorBurgerButtonActive: var(--colorColumbiaBlue);
+
+  --boxShadowCard: 5px 20px 50px 0 rgba(16, 112, 177, 0.2);
+  --boxShadowCardHover: 5px 25px 60px 0 rgba(16, 112, 177, 0.3);
+  --boxShadowButton: 5px 10px 20px 0 rgba(53, 110, 173, 0.2);
+  --boxShadowButtonHover: 0 8px 16px rgba(53, 110, 173, 0.35);
+  --boxShadowButtonActive: inset 0 3px 6px rgba(0, 0, 0, 0.3);
+
+  --gradient: linear-gradient(0deg, rgba(53, 110, 173, 0.15) 0%, var(--colorWhite) 30%);
+}
