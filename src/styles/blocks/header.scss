@@ -2,9 +2,17 @@
 @use "@styles/mixins" as *;
 
 .header {
-  padding: 2.5rem 5.1875rem 0;
+  padding-top: 2.5rem;
+  padding-inline: 5.1875rem;
   position: fixed;
   width: 100%;
+  background-color: var(--lineSpacingBase);
+  z-index: 100;
+
+  @include desktop {
+    padding-top: 1rem;
+    padding-inline: 1.5rem;
+  }
 
   &__logo {
     height: 3rem;
