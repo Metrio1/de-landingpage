@@ -1,0 +1,11 @@
+@use "@styles/media" as *;
+
+.footer {
+  background-color: var(--colorPrimary);
+  padding-top: 6rem;
+  border-top-left-radius: var(--borderRadiusBig);
+  color: var(--colorWhite);
+  @include mobile {
+    border-top-left-radius: 6.25rem;
+  }
+}

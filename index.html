@@ -73,7 +73,7 @@
       <ul class="services__list">
         <li class="services__item">
           <article class="serviceCard">
-            <div class="serviceCard__overlay"></div> <!-- слой для градиента -->
+            <div class="serviceCard__overlay"></div>
 
             <img
                     src="./images/services/womanWithSmartHome.svg"
@@ -115,6 +115,8 @@
         </li>
         <li class="services__item">
           <article class="serviceCard">
+            <div class="serviceCard__overlay"></div>
+
             <img
                     src="./images/services/manWithList.svg"
                     alt="Man holding a checklist"
@@ -153,6 +155,8 @@
         </li>
         <li class="services__item">
           <article class="serviceCard">
+            <div class="serviceCard__overlay"></div>
+
             <img
                     src="./images/services/womanWithLaptop.svg"
                     alt="Woman working on laptop"
@@ -192,6 +196,151 @@
       </ul>
     </section>
   </main>
+
+  <footer class="footer">
+    <div class="clients container">
+      <div class="clients__text">
+        <h2 class="clients__title">Our Beloved Client</h2>
+        <p class="clients__description">
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+          ad minim veniam.
+        </p>
+      </div>
+      <div class="clients__table">
+        <ul class="clients__list">
+          <li class="clients__item">
+            <span class="clients__logo">LOGO CLIENT 1</span>
+          </li>
+          <li class="clients__item">
+            <span class="clients__logo">LOGO CLIENT 2</span>
+          </li>
+          <li class="clients__item">
+            <span class="clients__logo">LOGO CLIENT 3</span>
+          </li>
+          <li class="clients__item">
+            <span class="clients__logo">LOGO CLIENT 4</span>
+          </li>
+          <li class="clients__item">
+            <span class="clients__logo">LOGO CLIENT 5</span>
+          </li>
+          <li class="clients__item">
+            <span class="clients__logo">LOGO CLIENT 6</span>
+          </li>
+          <li class="clients__item">
+            <span class="clients__logo">LOGO CLIENT 7</span>
+          </li>
+          <li class="clients__item">
+            <span class="clients__logo">More Client</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="contacts">
+      <div class="contacts__top">
+        <div class="contacts__text">
+          <h2 class="contacts__title">Interested to work with our team?</h2>
+          <p class="contacts__description">
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+            enim ad minim veniam.
+          </p>
+        </div>
+        <button
+                class="contacts__button button"
+                type="button"
+                id="openModalButton"
+                data-js-modal-open="#modalForm"
+                data-js-modal-type="selector"
+        >
+          Let’s Talk
+        </button>
+      </div>
+      <nav class="contacts__bottom">
+        <div class="contacts__info contacts__column">
+          <ul class="contacts__list contacts__infoList">
+            <li class="contacts__infoItem">
+              <div
+                      class="contacts__infoBrand contacts__contact contacts__bottomTitle"
+              >
+                <img
+                        src="./images/footer/footerLogo.svg"
+                        alt="testTask"
+                        class="logo__image"
+                        width="48"
+                        height="48"
+                        loading="lazy"
+                />
+                <h3 class="contacts__infoBrandLabel">Afrianska</h3>
+              </div>
+            </li>
+            <li class="contacts__infoItem">
+              <div class="contacts__infoDescription contacts__contact">
+                <span>A.</span>
+                <span>
+                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                  </span>
+              </div>
+            </li>
+            <li class="contacts__infoItem">
+              <address class="contacts__infoPhoneNumber contacts__contact">
+                <span>T.</span>
+                <a href="tel:+62-812-7313-4321">+62-812-7313-4321</a>
+              </address>
+            </li>
+            <li class="contacts__infoItem">
+              <address class="contacts__infoEmail contacts__contact">
+                <span>E.</span>
+                <a href="mailto:hello.afrian@gmail.com"
+                >hello.afrian@gmail.com</a
+                >
+              </address>
+            </li>
+          </ul>
+        </div>
+
+        <div class="contacts__about contacts__column">
+          <h3 class="contacts__aboutTitle contacts__bottomTitle">About US</h3>
+          <ul class="contacts__list">
+            <li class="contacts__item">
+              <a href="#" class="contacts__link">About</a>
+            </li>
+            <li class="contacts__item">
+              <a href="#" class="contacts__link">What We Do</a>
+            </li>
+            <li class="contacts__item">
+              <a href="#" class="contacts__link">Project</a>
+            </li>
+            <li class="contacts__item">
+              <a href="#" class="contacts__link">How It Work With Us</a>
+            </li>
+          </ul>
+        </div>
+        <div class="contacts__follow contacts__column">
+          <h3 class="contacts__followTitle contacts__bottomTitle">
+            Follow US
+          </h3>
+          <ul class="contacts__list">
+            <li class="contacts__item">
+              <a href="#" class="contacts__link">Instagram</a>
+            </li>
+            <li class="contacts__item">
+              <a href="#" class="contacts__link">Facebook</a>
+            </li>
+            <li class="contacts__item">
+              <a href="#" class="contacts__link">LinkedIn</a>
+            </li>
+            <li class="contacts__item">
+              <a href="#" class="contacts__link">YouTube</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <div class="contacts__copyright">
+        <p>2019 &copy; Afrianska. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
 
   <script type="module" src="./src/js/main.js"></script>
   </body>

@@ -10,7 +10,6 @@
   opacity var(--transitionEffectCard);
   position: relative;
 
-
   &__overlay {
     position: absolute;
     inset: 0;
@@ -30,6 +29,7 @@
       transform: scale(0);
       transform-origin: top right;
       transition: transform 0.8s ease;
+      margin-right: -1rem;
     }
   }
 
@@ -43,10 +43,6 @@
     z-index: 1;
   }
 
-  @include mobile {
-    width: 18rem;
-    padding: 2.25rem;
-  }
   @include hover {
     box-shadow: var(--boxShadowCardHover);
   }
@@ -84,15 +80,17 @@
     margin: 0 4.75rem 3.5rem 0.94rem;
     @include mobile {
       margin-inline: 0;
-      margin-bottom: 1.25rem;
+      margin-bottom: 2rem;
+      width: 100%;
     }
   }
 
   &__womanWithSmartHome {
     margin: -4.45rem 1.2rem 3.2rem;
     @include mobile {
-      margin-left: 0.5rem;
-      margin-bottom: 1rem;
+      margin-inline: 0;
+      margin-bottom: 2rem;
+      width: 100%;
     }
   }
 
@@ -100,7 +98,8 @@
     margin: 0 4.5rem 3.5rem 2.33rem;
     @include mobile {
       margin-inline: 0;
-      margin-bottom: 1.25rem;
+      margin-bottom: 2rem;
+      width: 100%;
     }
   }
 }
