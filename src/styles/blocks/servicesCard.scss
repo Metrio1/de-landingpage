@@ -7,10 +7,41 @@
   box-shadow: var(--boxShadowCard);
   transition: transform var(--transitionEffectCard),
   box-shadow var(--transitionEffectCard),
-  opacity var(--transitionEffectCard),
-  background-position var(--transitionEffectCard);
-  background-position: 0% 0%; // Показываем полностью при наведении
+  opacity var(--transitionEffectCard);
+  position: relative;
 
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: 0;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+                      -140deg,
+                      #98C3E8 0%,
+                      transparent 30%
+      );
+      transform: scale(0);
+      transform-origin: top right;
+      transition: transform 0.8s ease;
+    }
+  }
+
+  &:hover &__overlay::before {
+    transform: scale(2);
+  }
+
+  &__body,
+  &__image {
+    position: relative;
+    z-index: 1;
+  }
 
   @include mobile {
     width: 18rem;
@@ -18,9 +49,6 @@
   }
   @include hover {
     box-shadow: var(--boxShadowCardHover);
-    background: linear-gradient(135deg, #fff 0%, #f0f2f4 50%, #98C3E8 90%);
-    background-size: 200% 200%;
-    background-position: 50% 50%; // Начальная позиция - скрыт в правом нижнем углу
   }
 
   &__title {
