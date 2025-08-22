@@ -8,6 +8,7 @@
   width: 100%;
   background-color: var(--lineSpacingBase);
   z-index: 100;
+  pointer-events: none;
 
   @include desktop {
     padding-top: 1rem;
@@ -15,6 +16,7 @@
   }
 
   &__logo {
+    pointer-events: auto;
     height: 3rem;
   }
 

@@ -66,12 +66,12 @@
       </div>
     </section>
 
-    <section class="services container">
-      <h2 class="services__title">
+    <section class="services container" data-js-services>
+      <h2 class="services__title" data-js-services-title>
         What we do to help our client grow in digital era,
       </h2>
       <ul class="services__list">
-        <li class="services__item">
+        <li class="services__item" data-js-services-item>
           <article class="serviceCard">
             <div class="serviceCard__overlay"></div>
 
@@ -113,7 +113,7 @@
           </article>
 
         </li>
-        <li class="services__item">
+        <li class="services__item" data-js-services-item>
           <article class="serviceCard">
             <div class="serviceCard__overlay"></div>
 
@@ -153,7 +153,7 @@
             </div>
           </article>
         </li>
-        <li class="services__item">
+        <li class="services__item" data-js-services-item>
           <article class="serviceCard">
             <div class="serviceCard__overlay"></div>
 
@@ -198,10 +198,10 @@
   </main>
 
   <footer class="footer">
-    <div class="clients container">
+    <div class="clients container" data-js-clients>
       <div class="clients__text">
-        <h2 class="clients__title">Our Beloved Client</h2>
-        <p class="clients__description">
+        <h2 class="clients__title" data-js-clients-title>Our Beloved Client</h2>
+        <p class="clients__description" data-js-clients-description>
           Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
           eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
           ad minim veniam.
@@ -209,38 +209,38 @@
       </div>
       <div class="clients__table">
         <ul class="clients__list">
-          <li class="clients__item">
+          <li class="clients__item" data-js-clients-item>
             <span class="clients__logo">LOGO CLIENT 1</span>
           </li>
-          <li class="clients__item">
+          <li class="clients__item" data-js-clients-item>
             <span class="clients__logo">LOGO CLIENT 2</span>
           </li>
-          <li class="clients__item">
+          <li class="clients__item" data-js-clients-item>
             <span class="clients__logo">LOGO CLIENT 3</span>
           </li>
-          <li class="clients__item">
+          <li class="clients__item" data-js-clients-item>
             <span class="clients__logo">LOGO CLIENT 4</span>
           </li>
-          <li class="clients__item">
+          <li class="clients__item" data-js-clients-item>
             <span class="clients__logo">LOGO CLIENT 5</span>
           </li>
-          <li class="clients__item">
+          <li class="clients__item" data-js-clients-item>
             <span class="clients__logo">LOGO CLIENT 6</span>
           </li>
-          <li class="clients__item">
+          <li class="clients__item" data-js-clients-item>
             <span class="clients__logo">LOGO CLIENT 7</span>
           </li>
-          <li class="clients__item">
+          <li class="clients__item" data-js-clients-item>
             <span class="clients__logo">More Client</span>
           </li>
         </ul>
       </div>
     </div>
-    <div class="contacts">
+    <div class="contacts" data-js-contacts>
       <div class="contacts__top">
         <div class="contacts__text">
-          <h2 class="contacts__title">Interested to work with our team?</h2>
-          <p class="contacts__description">
+          <h2 class="contacts__title" data-js-contacts-title>Interested to work with our team?</h2>
+          <p class="contacts__description" data-js-contacts-description>
             Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
             enim ad minim veniam.
@@ -250,6 +250,7 @@
                 class="contacts__button button"
                 type="button"
                 id="openModalButton"
+                data-js-contacts-button
                 data-js-modal-open="#modalForm"
                 data-js-modal-type="selector"
         >
@@ -257,10 +258,11 @@
         </button>
       </div>
       <nav class="contacts__bottom">
-        <div class="contacts__info contacts__column">
+        <div class="contacts__info contacts__column" data-js-contacts-column>
           <ul class="contacts__list contacts__infoList">
             <li class="contacts__infoItem">
-              <div
+              <a
+                      href="#"
                       class="contacts__infoBrand contacts__contact contacts__bottomTitle"
               >
                 <img
@@ -272,7 +274,7 @@
                         loading="lazy"
                 />
                 <h3 class="contacts__infoBrandLabel">Afrianska</h3>
-              </div>
+              </a>
             </li>
             <li class="contacts__infoItem">
               <div class="contacts__infoDescription contacts__contact">
@@ -299,7 +301,7 @@
           </ul>
         </div>
 
-        <div class="contacts__about contacts__column">
+        <div class="contacts__about contacts__column" data-js-contacts-column>
           <h3 class="contacts__aboutTitle contacts__bottomTitle">About US</h3>
           <ul class="contacts__list">
             <li class="contacts__item">
@@ -316,7 +318,7 @@
             </li>
           </ul>
         </div>
-        <div class="contacts__follow contacts__column">
+        <div class="contacts__follow contacts__column" data-js-contacts-column>
           <h3 class="contacts__followTitle contacts__bottomTitle">
             Follow US
           </h3>
@@ -341,6 +343,84 @@
       </div>
     </div>
   </footer>
+
+  <div class="modal modalPopup modalPopup--isSuccess" id="successModal">
+    Данные успешно отправлены!
+  </div>
+
+  <div class="modal modalPopup modalPopup--isError" id="errorModal">
+    Произошла ошибка при отправке формы.
+  </div>
+
+  <div class="modal" id="modalForm">
+    <div class="modal__closeButtonWrapper">
+      <button
+              id="closeModalButton"
+              class="modal__closeButton"
+              type="button"
+              data-js-modal-close
+      >
+        <span class="visuallyHidden">Close the submission form</span>
+      </button>
+    </div>
+    <div class="modal__body">
+      <h3 class="modal__title">Send us a message</h3>
+      <form
+              class="form"
+              data-js-form='{
+            "url": "https://jsonplaceholder.typicode.com/posts",
+            "method": "POST",
+            "showModalAfterSuccess": "#successModal",
+            "showModalAfterError": "#errorModal",
+            "isResetAfterSuccess": true,
+            "isNeedValidateBeforeSubmit": true,
+            "isNeedPreventDefault": true
+          }'
+      >
+        <div class="form__group" data-js-validate-row>
+          <label for="name" class="form__label">Full name</label>
+          <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  class="form__input"
+                  placeholder="Your Name"
+                  data-js-input-required="name"
+                  data-js-input-required-mode="blur, change"
+          />
+          <small data-js-error-msg></small>
+        </div>
+        <div class="form__group" data-js-validate-row>
+          <label for="email" class="form__label">Email</label>
+          <input
+                  type="text"
+                  id="email"
+                  name="email"
+                  class="form__input"
+                  placeholder="Your Email"
+                  data-js-input-required="email"
+                  data-js-input-required-mode="blur, change"
+          />
+          <small data-js-error-msg></small>
+        </div>
+        <div class="form__group" data-js-validate-row>
+          <label for="message" class="form__label">Message</label>
+          <textarea
+                  id="message"
+                  name="message"
+                  class="form__textarea"
+                  placeholder="Your Message"
+                  data-js-input-required="message"
+                  data-js-input-required-mode="blur, change"
+          ></textarea>
+          <small data-js-error-msg></small>
+        </div>
+        <button class="form__submit button" type="submit" data-js-submit>Submit</button>
+      </form>
+    </div>
+  </div>
+
+  <div data-js-modal-backdrop class="modalBackdrop"></div>
 
   <script type="module" src="./src/js/main.js"></script>
   </body>

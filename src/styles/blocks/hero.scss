@@ -10,16 +10,36 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     @include mobile {
       margin-top: 5rem;
       margin-bottom: 2rem;
       flex-direction: column;
       align-items: stretch;
+      justify-content: space-evenly;
     }
   }
 
-  &__title {
+  &__body {
+    position: relative;
 
+    @include mobile {
+      display: contents;
+    }
+  }
+
+  &__title,
+  &__description,
+  &__button {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.8s ease-out forwards;
+    animation-fill-mode: both;
+  }
+
+
+  &__title {
+    animation-delay: 0.2s;
     @include mobile {
       order: -2;
     }
@@ -29,6 +49,8 @@
     max-width: 23vw;
     margin-top: 2.5rem;
     margin-bottom: 4.7rem;
+    animation-delay: 0.4s;
+
     @include desktop {
       max-width: 42%;
     }
@@ -42,11 +64,8 @@
     }
   }
 
-  &__body {
-    position: relative;
-    @include mobile {
-      display: contents;
-    }
+  .button {
+    animation-delay: 0.6s;
   }
 
   &__image {
@@ -54,6 +73,11 @@
     margin-inline: auto;
     margin-left: 23.39%;
     margin-top: 2.2%;
+    opacity: 0;
+    transform: scale(0.95);
+    animation: fadeInZoom 1s ease-out forwards;
+    animation-delay: 0.8s;
+
     @include desktop {
       margin-left: 0;
       right: 1rem;
@@ -61,6 +85,7 @@
       min-width: 18rem;
       height: auto;
     }
+
     @include mobile {
       margin-top: 0;
       right: 0;
@@ -69,5 +94,26 @@
       position: relative;
       order: -1;
     }
+  }
+}
+
+@keyframes fadeInZoom {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInRight {
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
   }
 }

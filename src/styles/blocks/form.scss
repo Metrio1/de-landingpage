@@ -1,0 +1,58 @@
+@use "@styles/media" as *;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1rem;
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.5rem;
+  }
+
+  &__input,
+  &__textarea {
+    padding-inline: 2.25rem;
+    border-radius: var(--borderRadius);
+    border: 1px solid var(--colorSecondary);
+    opacity: 0.4;
+
+    @include tablet {
+      padding-inline: 1.75rem;
+    }
+
+    @include mobile {
+      padding-inline: 1.25rem;
+    }
+  }
+
+  &__input {
+    height: var(--inputHeight);
+    @include tablet {
+      height: var(--inputHeightTablet);
+    }
+    @include mobile {
+      height: var(--inputHeightMobile);
+    }
+  }
+
+  &__textarea {
+    padding-top: 1.31rem;
+    min-height: 9rem;
+    resize: vertical;
+  }
+
+  &__submit {
+    margin-top: 2.5rem;
+    height: 4.5rem;
+    @include tablet {
+      margin-top: 1.25rem;
+      height: 3.75rem;
+    }
+    @include mobile {
+      margin-top: 0;
+      height: 3rem;
+    }
+  }
+}

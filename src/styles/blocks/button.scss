@@ -11,104 +11,43 @@
   background-color: var(--colorPrimary);
   border-radius: var(--borderRadius);
   white-space: nowrap;
+  box-shadow: var(--boxShadowButton);
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-  transition: all 1.2s cubic-bezier(0.23, 1, 0.32, 1);
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -200%;
-    width: 400%;
-    height: 100%;
-    background: linear-gradient(
-                    90deg,
-                    transparent 0%,
-                    rgba(255, 255, 255, 0.3) 25%,
-                    rgba(255, 255, 255, 0.6) 50%,
-                    rgba(255, 255, 255, 0.3) 75%,
-                    transparent 100%
-    );
-    opacity: 0;
-    transition: all 1.4s cubic-bezier(0.19, 1, 0.22, 1);
-    z-index: -1;
-  }
-
-  // Мощное белое свечение
-  .glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: radial-gradient(
-                    circle,
-                    rgba(255, 255, 255, 0.5) 0%,
-                    rgba(255, 255, 255, 0.3) 30%,
-                    transparent 70%
-    );
-    transform: translate(-50%, -50%);
-    transition: all 1.4s cubic-bezier(0.19, 1, 0.22, 1);
-    z-index: -1;
-  }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.5;
-
-    &::before {
-      display: none;
-    }
   }
 
   &:not(:disabled) {
     @include hover {
       color: var(--colorWhite);
+      box-shadow: var(--boxShadowButton);
       background-color: var(--colorButtonHover);
-
-      &::before {
-        left: -100%;
-        opacity: 1;
-      }
-
-      .glow {
-        width: 250px;
-        height: 250px;
-      }
     }
 
     &:active {
+      color: var(--colorWhite);
+      box-shadow: var(--boxShadowButton);
       background-color: var(--colorButtonActive);
-      transition: all 0.3s ease;
-
-      &::before {
-        left: -100%;
-        opacity: 0.3;
-        background: linear-gradient(
-                        90deg,
-                        transparent 0%,
-                        rgba(255, 255, 255, 0.15) 25%,
-                        rgba(255, 255, 255, 0.25) 50%,
-                        rgba(255, 255, 255, 0.15) 75%,
-                        transparent 100%
-        );
-        transition: all 0.3s ease;
-      }
-
-      .glow {
-        width: 180px;
-        height: 180px;
-        background: radial-gradient(
-                        circle,
-                        rgba(255, 255, 255, 0.3) 0%,
-                        rgba(255, 255, 255, 0.2) 40%,
-                        transparent 70%
-        );
-        transition: all 0.3s ease;
-      }
     }
+  }
+}
+
+.burgerButton {
+  @include flexCenter;
+  @include square(3rem);
+  border: none;
+  border-radius: var(--borderRadius);
+  background: transparent;
+  color: var(--colorBlue);
+  cursor: pointer;
+
+  @include hover {
+    background-color: var(--colorBurgerButtonHover);
+  }
+
+  &:active {
+    background-color: var(--colorBurgerButtonActive);
   }
 }

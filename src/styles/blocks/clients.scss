@@ -7,6 +7,7 @@
   flex-direction: column;
   row-gap: 7rem;
   padding-bottom: 7.8rem;
+
   @include mobile {
     row-gap: 3rem;
   }
@@ -15,6 +16,7 @@
     display: flex;
     column-gap: 6.1rem;
     padding-right: 5rem;
+
     @include desktop {
       @include flexCenter(true);
       flex-direction: column;
@@ -27,18 +29,35 @@
     width: 15.5rem;
     color: var(--colorWhite);
 
+    opacity: 0;
+    transform: translateX(-2.5px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+
     @include desktop {
       width: 100%;
       text-align: center;
     }
+
+    &.animate {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
 
   &__description {
-    opacity: 0.6;
+    opacity: 0;
     width: 70%;
     --paragraphMarginBottom: 0;
+    transform: translateX(2.5rem);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+
     @include desktop {
       text-align: center;
+    }
+
+    &.animate {
+      opacity: 0.6;
+      transform: translateX(0);
     }
   }
 
@@ -51,11 +70,13 @@
     display: grid;
     grid-template-columns: repeat(4, var(--logoClientWidth));
     grid-template-rows: repeat(2, var(--logoClientHeight));
+
     @include tablet {
       margin-inline: 5.6rem;
       grid-template-columns: repeat(2, var(--logoClientWidth));
       grid-template-rows: repeat(4, var(--logoClientHeight));
     }
+
     @include mobile {
       grid-template-columns: repeat(1, var(--logoClientWidth));
       grid-template-rows: repeat(8, var(--logoClientHeight));
@@ -72,18 +93,29 @@
     font-weight: 600;
     border-bottom: var(--gridLine);
     border-right: var(--gridLine);
-    transition: var(--transitionEffect);
     cursor: pointer;
+
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+
+    &.animate {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     @include tabletAbove {
       @include nthChildPattern(4n, border-right, none);
       @include nthLastChildPattern(4, border-bottom, none);
       @include nthLastChildPattern(1, background-color, var(--colorDarkBlueTransparent));
     }
+
     @include tablet {
       @include nthChildPattern(2n, border-right, none);
       @include nthLastChildPattern(2, border-bottom, none);
       @include nthLastChildPattern(1, background-color, var(--colorDarkBlueTransparent));
     }
+
     @include mobile {
       font-size: 1rem;
       @include nthChildPattern(n, border-right, none);

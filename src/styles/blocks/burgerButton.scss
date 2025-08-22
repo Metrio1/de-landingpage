@@ -9,6 +9,7 @@
   background: rgba(255, 255, 255, 0.8);
   color: var(--colorBlue);
   cursor: pointer;
+  pointer-events: auto;
 
   @include hover {
     background-color: var(--colorBurgerButtonHover);
