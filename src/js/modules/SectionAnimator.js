@@ -1,86 +1,63 @@
+import { SECTION_SELECTORS, STATE_CLASSES, SECTION_CONFIG } from "@/js/constants.js";
+
 export class SectionAnimator {
-    static selectors = {
-        services: "[data-js-services]",
-        servicesTitle: "[data-js-services-title]",
-        servicesItem: "[data-js-services-item]",
-        clients: "[data-js-clients]",
-        clientsTitle: "[data-js-clients-title]",
-        clientsDescription: "[data-js-clients-description]",
-        clientsItem: "[data-js-clients-item]",
-        contacts: "[data-js-contacts]",
-        contactsTitle: "[data-js-contacts-title]",
-        contactsDescription: "[data-js-contacts-description]",
-        contactsButton: "[data-js-contacts-button]",
-        contactsColumn: "[data-js-contacts-column]",
-    };
-
-    static animationConfig = {
-        step: 200,
-        contactsBaseDelay: 600,
-    };
-
     constructor() {
         this.#init();
     }
 
     #init() {
-        this.#registerSection(SectionAnimator.selectors.services, this.#animateServices.bind(this));
-        this.#registerSection(SectionAnimator.selectors.clients, this.#animateClients.bind(this));
-        this.#registerSection(SectionAnimator.selectors.contacts, this.#animateContacts.bind(this));
+        this.#observe(SECTION_SELECTORS.services, (s) => this.#animateServices(s));
+        this.#observe(SECTION_SELECTORS.clients, (s) => this.#animateClients(s));
+        this.#observe(SECTION_SELECTORS.contacts, (s) => this.#animateContacts(s));
     }
 
-    #registerSection(selector, callback) {
+    #observe(selector, onEnter) {
         const section = document.querySelector(selector);
         if (!section) return;
 
         const observer = new IntersectionObserver((entries, obs) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    callback(section);
+                    onEnter(section);
                     obs.disconnect();
                 }
             });
-        }, { threshold: 0.15 });
+        }, { threshold: SECTION_CONFIG.threshold });
 
         observer.observe(section);
     }
 
-    #applyAnimation(elements, step = 0, initialDelay = 0) {
-        elements.forEach((el, index) => {
-            setTimeout(() => el.classList.add("animate"), initialDelay + index * step);
+    #stagger(elements, step = 0, delay = 0) {
+        elements.forEach((el, i) => {
+            setTimeout(() => el.classList.add(STATE_CLASSES.animated), delay + i * step);
         });
     }
 
     #animateServices(section) {
-        const { servicesTitle, servicesItem } = SectionAnimator.selectors;
-        const title = section.querySelector(servicesTitle);
-        const items = section.querySelectorAll(servicesItem);
-
-        if (title) title.classList.add("animate");
-        this.#applyAnimation(items, SectionAnimator.animationConfig.step);
+        const t = section.querySelector(SECTION_SELECTORS.servicesTitle);
+        const items = section.querySelectorAll(SECTION_SELECTORS.servicesItem);
+        if (t) t.classList.add(STATE_CLASSES.animated);
+        this.#stagger(items, SECTION_CONFIG.step);
     }
 
     #animateClients(section) {
-        const { clientsTitle, clientsDescription, clientsItem } = SectionAnimator.selectors;
-        const title = section.querySelector(clientsTitle);
-        const description = section.querySelector(clientsDescription);
-        const items = section.querySelectorAll(clientsItem);
-
-        if (title) title.classList.add("animate");
-        if (description) description.classList.add("animate");
-        this.#applyAnimation(items, SectionAnimator.animationConfig.step);
+        const t = section.querySelector(SECTION_SELECTORS.clientsTitle);
+        const d = section.querySelector(SECTION_SELECTORS.clientsDescription);
+        const items = section.querySelectorAll(SECTION_SELECTORS.clientsItem);
+        if (t) t.classList.add(STATE_CLASSES.animated);
+        if (d) d.classList.add(STATE_CLASSES.animated);
+        this.#stagger(items, SECTION_CONFIG.step);
     }
 
     #animateContacts(section) {
-        const { contactsTitle, contactsDescription, contactsButton, contactsColumn } = SectionAnimator.selectors;
-        const title = section.querySelector(contactsTitle);
-        const description = section.querySelector(contactsDescription);
-        const button = section.querySelector(contactsButton);
-        const columns = section.querySelectorAll(contactsColumn);
+        const t = section.querySelector(SECTION_SELECTORS.contactsTitle);
+        const d = section.querySelector(SECTION_SELECTORS.contactsDescription);
+        const b = section.querySelector(SECTION_SELECTORS.contactsButton);
+        const cols = section.querySelectorAll(SECTION_SELECTORS.contactsColumn);
 
-        if (title) title.classList.add("animate");
-        if (description) this.#applyAnimation([description], 0, 200);
-        if (button) this.#applyAnimation([button], 0, 400);
-        this.#applyAnimation(columns, SectionAnimator.animationConfig.step, SectionAnimator.animationConfig.contactsBaseDelay);
+        if (t) t.classList.add(STATE_CLASSES.animated);
+        if (d) this.#stagger([d], 0, 200);
+        if (b) this.#stagger([b], 0, 400);
+        this.#stagger(cols, SECTION_CONFIG.step, SECTION_CONFIG.contactsBaseDelay);
     }
 }

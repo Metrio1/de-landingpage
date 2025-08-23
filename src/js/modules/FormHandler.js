@@ -1,52 +1,76 @@
 import { FormValidator } from "@/js/modules/FormValidator.js";
 import { ModalManager } from "@/js/modules/ModalManager.js";
 import { FormProcessor } from "@/js/modules/FormProcessor.js";
+import { ATTRS, FORM_DEFAULTS } from "@/js/constants.js";
 
 export class FormHandler {
-  static instance;
-  #modalManager;
-  #formProcessor;
+  static attrs = ATTRS;
+  static defaults = FORM_DEFAULTS;
 
-  attrs = {
-    form: "data-js-form",
-  };
+  #processor;
+  #configCache = new WeakMap();
+  #onSubmitBound = (e) => this.#onSubmit(e);
 
-  constructor(modalManager = new ModalManager(), formProcessor = null, formSend = null) {
-    if (FormHandler.instance) {
-      return FormHandler.instance;
-    }
+  constructor(modalManager = new ModalManager(), formProcessor = null) {
+    this.#processor =
+        formProcessor ||
+        new FormProcessor({
+          modalManager,
+        });
 
-    this.#modalManager = modalManager;
-    this.#formProcessor = formProcessor || new FormProcessor(modalManager, formSend);
-    this.#bindEvents();
-    FormHandler.instance = this;
+    document.addEventListener("submit", this.#onSubmitBound, true);
   }
 
-  async #handleSubmit(event) {
-    const { target, submitter } = event;
-    const formConfig = this.#prepareConfig(target);
+  #onSubmit(event) {
+    const { target: form, submitter } = event;
+    if (!(form instanceof HTMLFormElement)) return;
 
-    const { isNeedPreventDefault = true, isNeedValidateBeforeSubmit = true } = formConfig;
-
-    if (isNeedPreventDefault) {
+    const cfg = this.#getFormConfig(form);
+    if (cfg.isNeedPreventDefault) {
       event.preventDefault();
     }
 
-    if (!FormValidator.isValidForm(target, this.attrs, isNeedValidateBeforeSubmit)) {
+    if (!FormValidator.isValidForm(form, FormHandler.attrs, cfg.isNeedValidateBeforeSubmit)) {
       return;
     }
 
-    await this.#formProcessor.process(target, submitter, formConfig);
+    this.#processor.process(form, submitter || null, cfg);
   }
 
-  #prepareConfig(form) {
-    if (!form._config) {
-      form._config = JSON.parse(form.getAttribute(this.attrs.form));
+  #getFormConfig(form) {
+    if (this.#configCache.has(form)) {
+      return this.#configCache.get(form);
     }
-    return form._config;
-  }
 
-  #bindEvents() {
-    document.addEventListener("submit", (e) => this.#handleSubmit(e), true);
+    const raw = form.getAttribute(FormHandler.attrs.form) || "{}";
+    let parsed = {};
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = {};
+    }
+
+    const d = FormHandler.defaults;
+    const merged = {
+      isNeedPreventDefault: parsed.isNeedPreventDefault ?? d.isNeedPreventDefault,
+      isNeedValidateBeforeSubmit: parsed.isNeedValidateBeforeSubmit ?? d.isNeedValidateBeforeSubmit,
+
+      request: {
+        url: parsed.request?.url ?? parsed.url ?? d.request.url,
+        method: (parsed.request?.method ?? parsed.method ?? d.request.method).toUpperCase(),
+        headers: { ...(d.request.headers || {}), ...(parsed.request?.headers || parsed.headers || {}) },
+      },
+
+      showModalAfterSuccess: parsed.showModalAfterSuccess ?? d.showModalAfterSuccess,
+      showModalAfterError: parsed.showModalAfterError ?? d.showModalAfterError,
+      isResetAfterSuccess: parsed.isResetAfterSuccess ?? d.isResetAfterSuccess,
+
+      isNeedShowBackdrop: parsed.isNeedShowBackdrop ?? d.isNeedShowBackdrop,
+      closeAfterDelaySuccess: parsed.closeAfterDelaySuccess ?? d.closeAfterDelaySuccess,
+      closeAfterDelayError: parsed.closeAfterDelayError ?? d.closeAfterDelayError,
+    };
+
+    this.#configCache.set(form, merged);
+    return merged;
   }
 }

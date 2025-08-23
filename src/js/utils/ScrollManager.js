@@ -6,30 +6,22 @@ export class ScrollManager {
     }
 
     static set isLocked(value) {
-        if (typeof value !== "boolean") {
-            console.error("Состояние isLocked должно быть булевым");
-            return;
-        }
+        if (typeof value !== "boolean") return;
         ScrollManager.#isLocked = value;
     }
 
     static lock() {
-        if (ScrollManager.isLocked) {
-            return;
-        }
+        if (ScrollManager.isLocked) return;
 
         const scrollY = window.scrollY;
         document.body.style.setProperty("--scrolledTop", `-${scrollY}px`);
         document.body.classList.add("lock");
         document.body.classList.remove("unlock");
-
         ScrollManager.isLocked = true;
     }
 
     static unlock() {
-        if (!ScrollManager.isLocked) {
-            return;
-        }
+        if (!ScrollManager.isLocked) return;
 
         document.body.classList.remove("lock");
         document.body.classList.add("unlock");
@@ -37,7 +29,6 @@ export class ScrollManager {
         const scrollY = parseInt(document.body.style.getPropertyValue("--scrolledTop"), 10);
         window.scrollTo({ top: -scrollY, behavior: "instant" });
         document.body.style.removeProperty("--scrolledTop");
-
         ScrollManager.isLocked = false;
     }
 }

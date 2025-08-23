@@ -1,74 +1,46 @@
-import { ModalManager } from "./ModalManager.js";
-import { ScrollManager } from "@/js/utils/ScrollManager.js";
-
+/**
+ * Чистый транспорт. Не управляет UI.
+ */
 export class FormSend {
-    #url;
-    #method;
-    #headers;
-    #modalManager;
+    #defaultHeaders;
 
-    constructor(url, method = "POST", headers = {}, modalManagerInstance = null) {
-        this.#url = url;
-        this.#method = method.toUpperCase();
-        this.#headers = headers;
-        this.#modalManager = modalManagerInstance || new ModalManager();
+    constructor(defaultHeaders = {}) {
+        this.#defaultHeaders = defaultHeaders;
     }
 
-    async sendData(form, formData, { showModalAfterSuccess, showModalAfterError, isResetAfterSuccess }) {
-        try {
-            const response = await fetch(this.#url, this.#getRequestOptions(formData));
-            if (!response.ok) {
-                throw new Error(`Ошибка сети: ${response.status} ${response.statusText}`);
-            }
-
-            const result = await response.json();
-            this.#handleSuccess(form, showModalAfterSuccess, isResetAfterSuccess);
-            return result;
-        } catch (error) {
-            this.#handleError(error, showModalAfterError);
-            throw error;
-        }
-    }
-
-    #getRequestOptions(formData) {
-        const options = {
-            method: this.#method,
-            headers: {
-                "Accept": "application/json",
-                ...this.#headers,
-            },
+    async send(url, method = "POST", formData = null, headers = {}) {
+        const finalHeaders = {
+            Accept: "application/json",
+            ...this.#defaultHeaders,
+            ...headers,
         };
 
-        if (this.#method !== "GET") {
+        const upper = (method || "POST").toUpperCase();
+        let fetchUrl = url || "";
+        const options = { method: upper, headers: finalHeaders };
+
+        if (upper === "GET" && formData) {
+            const usp = new URLSearchParams();
+            for (const [k, v] of formData.entries()) usp.append(k, v);
+            const sep = fetchUrl.includes("?") ? "&" : "?";
+            fetchUrl += `${sep}${usp.toString()}`;
+        } else if (formData) {
             options.body = formData;
         }
 
-        return options;
-    }
+        const response = await fetch(fetchUrl, options);
+        const contentType = String(response.headers.get("content-type") || "");
+        const payload = contentType.includes("application/json")
+            ? await response.json().catch(() => ({}))
+            : await response.text().catch(() => "");
 
-    #handleSuccess(form, showModalAfterSuccess, isResetAfterSuccess) {
-        if (isResetAfterSuccess) {
-            form.reset();
+        if (!response.ok) {
+            const err = new Error("RequestFailed");
+            err.status = response.status;
+            err.data = payload;
+            throw err;
         }
 
-        this.#openModal(showModalAfterSuccess, false, 2000);
-    }
-
-    #handleError(error, showModalAfterError) {
-        console.error("Ошибка при отправке данных:", error);
-
-        this.#openModal(showModalAfterError, true, 3000);
-    }
-
-    #openModal(src, isNeedShowBackdrop, closeAfterDelay) {
-        if (src) {
-            this.#modalManager.open({
-                src,
-                type: "selector",
-                isNeedShowBackdrop,
-                closeAfterDelay,
-            });
-        }
-        ScrollManager.unlock();
+        return { ok: true, data: payload, status: response.status };
     }
 }
