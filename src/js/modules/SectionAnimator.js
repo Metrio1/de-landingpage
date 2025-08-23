@@ -1,69 +1,86 @@
 export class SectionAnimator {
+    static selectors = {
+        services: "[data-js-services]",
+        servicesTitle: "[data-js-services-title]",
+        servicesItem: "[data-js-services-item]",
+        clients: "[data-js-clients]",
+        clientsTitle: "[data-js-clients-title]",
+        clientsDescription: "[data-js-clients-description]",
+        clientsItem: "[data-js-clients-item]",
+        contacts: "[data-js-contacts]",
+        contactsTitle: "[data-js-contacts-title]",
+        contactsDescription: "[data-js-contacts-description]",
+        contactsButton: "[data-js-contacts-button]",
+        contactsColumn: "[data-js-contacts-column]",
+    };
+
+    static animationConfig = {
+        step: 200,
+        contactsBaseDelay: 600,
+    };
+
     constructor() {
         this.#init();
     }
 
     #init() {
-        this.#registerSection("[data-js-services]", this.#animateServices.bind(this));
-        this.#registerSection("[data-js-clients]", this.#animateClients.bind(this));
-        this.#registerSection("[data-js-contacts]", this.#animateContacts.bind(this));
+        this.#registerSection(SectionAnimator.selectors.services, this.#animateServices.bind(this));
+        this.#registerSection(SectionAnimator.selectors.clients, this.#animateClients.bind(this));
+        this.#registerSection(SectionAnimator.selectors.contacts, this.#animateContacts.bind(this));
     }
 
     #registerSection(selector, callback) {
         const section = document.querySelector(selector);
         if (!section) return;
 
-        const observer = new IntersectionObserver(
-            (entries, obs) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        callback(section);
-                        obs.disconnect();
-                    }
-                });
-            },
-            { threshold: 0.15 }
-        );
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    callback(section);
+                    obs.disconnect();
+                }
+            });
+        }, { threshold: 0.15 });
 
         observer.observe(section);
     }
 
+    #applyAnimation(elements, step = 0, initialDelay = 0) {
+        elements.forEach((el, index) => {
+            setTimeout(() => el.classList.add("animate"), initialDelay + index * step);
+        });
+    }
+
     #animateServices(section) {
-        const title = section.querySelector("[data-js-services-title]");
-        const items = section.querySelectorAll("[data-js-services-item]");
+        const { servicesTitle, servicesItem } = SectionAnimator.selectors;
+        const title = section.querySelector(servicesTitle);
+        const items = section.querySelectorAll(servicesItem);
 
         if (title) title.classList.add("animate");
-
-        items.forEach((item, index) => {
-            setTimeout(() => item.classList.add("animate"), index * 200);
-        });
+        this.#applyAnimation(items, SectionAnimator.animationConfig.step);
     }
 
     #animateClients(section) {
-        const title = section.querySelector("[data-js-clients-title]");
-        const description = section.querySelector("[data-js-clients-description]");
-        const items = section.querySelectorAll("[data-js-clients-item]");
+        const { clientsTitle, clientsDescription, clientsItem } = SectionAnimator.selectors;
+        const title = section.querySelector(clientsTitle);
+        const description = section.querySelector(clientsDescription);
+        const items = section.querySelectorAll(clientsItem);
 
         if (title) title.classList.add("animate");
         if (description) description.classList.add("animate");
-
-        items.forEach((item, index) => {
-            setTimeout(() => item.classList.add("animate"), index * 200);
-        });
+        this.#applyAnimation(items, SectionAnimator.animationConfig.step);
     }
 
     #animateContacts(section) {
-        const title = section.querySelector("[data-js-contacts-title]");
-        const description = section.querySelector("[data-js-contacts-description]");
-        const button = section.querySelector("[data-js-contacts-button]");
-        const columns = section.querySelectorAll("[data-js-contacts-column]");
+        const { contactsTitle, contactsDescription, contactsButton, contactsColumn } = SectionAnimator.selectors;
+        const title = section.querySelector(contactsTitle);
+        const description = section.querySelector(contactsDescription);
+        const button = section.querySelector(contactsButton);
+        const columns = section.querySelectorAll(contactsColumn);
 
         if (title) title.classList.add("animate");
-        if (description) setTimeout(() => description.classList.add("animate"), 200);
-        if (button) setTimeout(() => button.classList.add("animate"), 400);
-
-        columns.forEach((col, index) => {
-            setTimeout(() => col.classList.add("animate"), 600 + index * 200);
-        });
+        if (description) this.#applyAnimation([description], 0, 200);
+        if (button) this.#applyAnimation([button], 0, 400);
+        this.#applyAnimation(columns, SectionAnimator.animationConfig.step, SectionAnimator.animationConfig.contactsBaseDelay);
     }
 }
