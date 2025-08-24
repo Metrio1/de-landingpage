@@ -17,7 +17,7 @@
     column-gap: 6.1rem;
     padding-right: 5rem;
 
-    @include desktop {
+    @include tablet {
       @include flexCenter(true);
       flex-direction: column;
       row-gap: 3.1rem;
@@ -33,7 +33,7 @@
     transform: translateX(-2.5px);
     transition: opacity 0.6s ease, transform 0.6s ease;
 
-    @include desktop {
+    @include tablet {
       width: 100%;
       text-align: center;
     }
@@ -51,7 +51,7 @@
     transform: translateX(2.5rem);
     transition: opacity 0.6s ease, transform 0.6s ease;
 
-    @include desktop {
+    @include tablet {
       text-align: center;
     }
 

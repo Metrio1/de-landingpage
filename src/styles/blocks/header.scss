@@ -3,14 +3,15 @@
 
 .header {
   padding-top: 2.5rem;
-  padding-inline: 5.1875rem;
+  padding-left: 5.1875rem;
+  padding-right: 4.61rem;
   position: fixed;
   width: 100%;
   background-color: var(--lineSpacingBase);
   z-index: 100;
   pointer-events: none;
 
-  @include desktop {
+  @include tablet {
     padding-top: 1rem;
     padding-inline: 1.5rem;
   }

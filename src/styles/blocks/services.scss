@@ -1,7 +1,7 @@
 @use "@styles/media" as *;
 
 .services {
-  padding-top: 11.25rem;
+  padding-top: 10.8rem;
   padding-bottom: 13.25rem;
   display: flex;
   flex-direction: column;
@@ -85,7 +85,7 @@
 
     &:nth-child(even) {
       align-self: flex-start;
-      margin-top: -14.15rem;
+      margin-top: -14.3rem;
 
       @include tablet {
         margin-top: 0;
