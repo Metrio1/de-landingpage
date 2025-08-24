@@ -1,91 +1,104 @@
-import { ATTRS, STATE_CLASSES, VALIDATOR_DEFAULTS, VALIDATOR_ERRORS } from "@/js/constants.js";
-
 export class FormValidator {
-    static attrs = ATTRS;
-    static stateClasses = STATE_CLASSES;
-    static defaults = VALIDATOR_DEFAULTS;
+    static classes = { invalid: "isInvalid", inputInvalid: "input--invalid", valid: "isValid" };
+
+    static attrs = {
+        required: "data-js-input-required",
+        requiredMode: "data-js-input-required-mode",
+        errorMsg: "data-js-error-msg",
+        row: "data-js-validate-row",
+    };
+
+    #debounceTimers = new WeakMap();
 
     constructor() {
-        this.#bind();
+        this.#bindEvents();
     }
 
-    #bind() {
-        document.addEventListener("blur", FormValidator.#handleEvent, true);
-        document.addEventListener("focus", FormValidator.#handleEvent, true);
-        document.addEventListener("input", FormValidator.#handleEvent, true);
-    }
+    #onBlur = (e) => this.#dispatchValidation(e);
+    #onFocus = (e) => this.#dispatchValidation(e);
+    #onInput = (e) => this.#dispatchValidation(e);
 
-    static #handleEvent(event) {
-        const input = event.target?.closest?.(`[${ATTRS.inputRequired}]`);
-        if (!input) return;
-
-        const modesAttr = input.getAttribute(ATTRS.inputRequiredMode);
-        const modes = modesAttr ? modesAttr.trim().split(/\s*,\s*/) : [];
-        if (!(modes.includes(event.type) || event.type === "input")) return;
-
-        const debounceAttr = input.getAttribute(ATTRS.debounceMs);
-        const debounceMs = Number.isFinite(+debounceAttr) ? +debounceAttr : VALIDATOR_DEFAULTS.debounceMs;
-
-        if (debounceMs > 0) {
-            clearTimeout(input.__fvTimer);
-            input.__fvTimer = setTimeout(() => {
-                FormValidator.validateInput(input);
-            }, debounceMs);
-        } else {
-            FormValidator.validateInput(input);
-        }
-    }
-
-    static isValidForm(form, attrs, needValidate) {
-        if (!(form instanceof HTMLFormElement)) return false;
-        if (!form.hasAttribute(attrs.form)) return false;
-
-        if (!needValidate) return true;
-
+    static isFormValid(form) {
         let ok = true;
-        const list = form.querySelectorAll(`[${ATTRS.inputRequired}]`);
-        list.forEach((input) => {
-            if (!FormValidator.validateInput(input)) ok = false;
-        });
+        for (const el of form.elements) {
+            if (el instanceof HTMLElement && el.matches(`[${FormValidator.attrs.required}]`)) {
+                if (!FormValidator.validate(el)) ok = false;
+            }
+        }
         return ok;
     }
 
-    static validateInput(input) {
-        const type = input.getAttribute(ATTRS.inputRequired);
-        const value = String(input.value || "");
-
+    static validate(el) {
+        const type = el.getAttribute(FormValidator.attrs.required) || "text";
         const validators = {
-            name: () => FormValidator.#validateText(value),
-            email: () => FormValidator.#validateEmail(value),
-            default: () => FormValidator.#validateText(value),
+            name: (v) => FormValidator.#validateText(v),
+            text: (v) => FormValidator.#validateText(v),
+            email: (v) => FormValidator.#validateEmail(v),
         };
-
-        const fn = validators[type] || validators.default;
-        const isValid = !!fn();
-
-        const row = input.closest?.(`[${ATTRS.row}]`) || null;
-        const errorEl = row?.querySelector?.(`[${ATTRS.error}]`) || null;
-        const message = VALIDATOR_ERRORS[type] || VALIDATOR_ERRORS.default;
-
-        if (isValid) {
-            if (row) row.classList.remove(STATE_CLASSES.isInvalid);
-            input.classList.remove(STATE_CLASSES.inputInvalid);
-            if (errorEl) errorEl.textContent = "";
-        } else {
-            if (row) row.classList.add(STATE_CLASSES.isInvalid);
-            input.classList.add(STATE_CLASSES.inputInvalid);
-            if (errorEl) errorEl.textContent = message;
-        }
-
+        const messages = {
+            name: "Введите корректное имя",
+            email: "Введите корректный адрес электронной почты",
+            text: "Это поле обязательно для заполнения",
+        };
+        const value = "value" in el ? String(el.value) : "";
+        const isValid = (validators[type] || validators.text)(value);
+        const row = el.closest(`[${FormValidator.attrs.row}]`);
+        const msgNode = row?.querySelector(`[${FormValidator.attrs.errorMsg}]`);
+        if (isValid) FormValidator.#hideError(row, msgNode, el);
+        else FormValidator.#showError(row, msgNode, messages[type] || messages.text, el);
         return isValid;
     }
 
+    #bindEvents() {
+        document.addEventListener("blur", this.#onBlur, true);
+        document.addEventListener("focus", this.#onFocus, true);
+        document.addEventListener("input", this.#onInput, true);
+    }
+
+    #dispatchValidation(event) {
+        const el = event.target?.closest?.(`[${FormValidator.attrs.required}]`);
+        if (!el) return;
+
+        const modes = (el.getAttribute(FormValidator.attrs.requiredMode) || "")
+            .split(/\s*,\s*/)
+            .filter(Boolean);
+
+        if (event.type === "input") {
+            const type = el.getAttribute(FormValidator.attrs.required);
+            if (type === "email") {
+                this.#debounce(el, () => FormValidator.validate(el), 300);
+            } else {
+                FormValidator.validate(el);
+            }
+            return;
+        }
+
+        if (modes.includes(event.type)) FormValidator.validate(el);
+    }
+
+    #debounce(el, fn, delay) {
+        window.clearTimeout(this.#debounceTimers.get(el));
+        const id = window.setTimeout(fn, delay);
+        this.#debounceTimers.set(el, id);
+    }
+
     static #validateEmail(v) {
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        return emailRegex.test(v.trim());
+        return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v.trim());
     }
 
     static #validateText(v) {
-        return v.trim() !== "";
+        return v.trim().length > 0;
+    }
+
+    static #showError(row, msgNode, message, input) {
+        row?.classList.add(FormValidator.classes.invalid);
+        input?.classList.add(FormValidator.classes.inputInvalid);
+        if (msgNode) msgNode.textContent = message;
+    }
+
+    static #hideError(row, msgNode, input) {
+        row?.classList.remove(FormValidator.classes.invalid);
+        input?.classList.remove(FormValidator.classes.inputInvalid);
+        if (msgNode) msgNode.textContent = "";
     }
 }

@@ -1,48 +1,29 @@
 import { ScrollManager } from "@/js/utils/ScrollManager.js";
-import { STATE_CLASSES, ATTRS, MODAL_BACKDROP_SELECTOR } from "@/js/constants.js";
 
 export class ModalManager {
-    static stateClasses = STATE_CLASSES;
-    static attrs = ATTRS;
+    static classes = {
+        open: "isOpen",
+        base: "modal",
+    };
 
-    #backdrop;
+    static attrs = {
+        openTrigger: "data-js-modal-open",
+        type: "data-js-modal-type",
+        closeTrigger: "data-js-modal-close",
+        backdrop: "data-js-modal-backdrop",
+        focusGuard: "data-js-focus-guard",
+    };
+
     #instances = new Map();
-    #onClickBound = (e) => this.#onClick(e);
-    #onKeydownBound = (e) => this.#onKeydown(e);
+    #backdrop = null;
 
-    constructor({ backdropSelector = MODAL_BACKDROP_SELECTOR, autoBind = true } = {}) {
-        this.#backdrop = document.querySelector(backdropSelector) || null;
-        if (autoBind) {
-            document.addEventListener("click", this.#onClickBound, true);
-            document.addEventListener("keydown", this.#onKeydownBound, true);
-        }
+    constructor() {
+        this.#backdrop = document.querySelector(`[${ModalManager.attrs.backdrop}]`);
+        this.#bindEvents();
     }
 
-    #onClick(event) {
-        const closeEl = event.target.closest?.(`[${ATTRS.modalClose}]`);
-        const trigger = event.target.closest?.(`[${ATTRS.modalOpen}]`);
-
-        if (trigger) {
-            const src = trigger.getAttribute(ATTRS.modalOpen);
-            const type = trigger.getAttribute(ATTRS.modalType);
-            if (src && type) this.open({ src, type });
-            return;
-        }
-
-        if (closeEl) {
-            this.close();
-            return;
-        }
-
-        const [openModal] = this.getOpenInstance();
-        if (openModal && !openModal.contains(event.target)) {
-            this.close();
-        }
-    }
-
-    #onKeydown(event) {
-        if (event.key === "Escape") this.close();
-    }
+    #onClick = (e) => this.#handleClick(e);
+    #onKeydown = (e) => this.#handleKeydown(e);
 
     getOpenInstance() {
         for (const [el, state] of this.#instances.entries()) {
@@ -51,57 +32,131 @@ export class ModalManager {
         return [null, null];
     }
 
-    open({ src, type, isNeedShowBackdrop = true, closeAfterDelay } = {}) {
+    open({ src, type, showBackdrop = true, autoCloseAfterMs } = {}) {
         this.close();
+        const node = this.#resolveModalNode(src, type);
+        if (!node) return null;
 
-        const modal = this.#resolveModal(src, type);
-        if (!modal) return null;
-
-        if (this.#backdrop && isNeedShowBackdrop) {
-            this.#backdrop.classList.add(STATE_CLASSES.isOpen);
+        if (this.#backdrop && showBackdrop) {
+            this.#backdrop.classList.add(ModalManager.classes.open);
         }
 
-        modal.classList.add(STATE_CLASSES.isOpen);
-        this.#instances.set(modal, { isOpen: true, type });
+        node.classList.add(ModalManager.classes.open);
+        this.#instances.set(node, { isOpen: true, type });
+        this.#trapFocus(node);
         ScrollManager.lock();
 
-        if (closeAfterDelay) {
-            setTimeout(() => this.close(modal), closeAfterDelay);
+        if (autoCloseAfterMs) {
+            window.setTimeout(() => this.close(node), autoCloseAfterMs);
         }
-        return modal;
+        return node;
     }
 
-    #resolveModal(src, type) {
-        if (type === "selector") {
-            return document.querySelector(src);
+    close(targetNode = null, { hideBackdrop = true } = {}) {
+        const [current] = this.getOpenInstance();
+        const node = targetNode || current;
+        if (!node) return;
+
+        const state = this.#instances.get(node);
+        if (!state) return;
+
+        node.classList.remove(ModalManager.classes.open);
+
+        if (state.type === "html") {
+            node.remove();
         }
-        if (type === "html" && typeof src === "string") {
-            const el = document.createElement("div");
-            el.classList.add(STATE_CLASSES.baseModal);
-            el.innerHTML = src;
-            document.body.appendChild(el);
-            return el;
+
+        this.#instances.delete(node);
+
+        if (hideBackdrop && this.#backdrop) {
+            this.#backdrop.classList.remove(ModalManager.classes.open);
         }
+
+        this.#releaseFocus();
+        ScrollManager.unlock();
+    }
+
+    #bindEvents() {
+        document.addEventListener("click", this.#onClick);
+        document.addEventListener("keydown", this.#onKeydown);
+    }
+
+    #handleClick(event) {
+        const closer = event.target.closest(`[${ModalManager.attrs.closeTrigger}]`);
+        if (closer) {
+            this.close();
+            return;
+        }
+
+        const trigger = event.target.closest(`[${ModalManager.attrs.openTrigger}]`);
+        if (trigger) {
+            const src = trigger.getAttribute(ModalManager.attrs.openTrigger);
+            const type = trigger.getAttribute(ModalManager.attrs.type);
+            if (src && type) this.open({ src, type });
+            return;
+        }
+
+        const [openEl] = this.getOpenInstance();
+        if (openEl && !openEl.contains(event.target)) this.close();
+    }
+
+    #handleKeydown(event) {
+        if (event.key === "Escape") this.close();
+    }
+
+    #resolveModalNode(src, type) {
+        if (type === "selector") return document.querySelector(src);
+        if (type === "html" && typeof src === "string") return this.#createModal(src);
         return null;
     }
 
-    close(target = null, { isNeedCloseBackdrop = true } = {}) {
-        const [openModal] = this.getOpenInstance();
-        const modal = target || openModal;
-        if (!modal) return;
+    #createModal(html) {
+        const modal = document.createElement("div");
+        modal.classList.add(ModalManager.classes.base);
+        modal.innerHTML = html;
+        document.body.appendChild(modal);
+        return modal;
+    }
 
-        const state = this.#instances.get(modal);
-        if (!state) return;
+    #trapFocus(container) {
+        const guards = [
+            this.#createFocusGuard("start"),
+            this.#createFocusGuard("end"),
+        ];
+        container.prepend(guards[0]);
+        container.append(guards[1]);
+        container.dataset.hasFocusGuards = "true";
+        container.setAttribute("tabindex", "-1");
+        container.focus({ preventScroll: true });
+    }
 
-        if (isNeedCloseBackdrop && this.#backdrop) {
-            this.#backdrop.classList.remove(STATE_CLASSES.isOpen);
-        }
+    #releaseFocus() {
+        const [node] = this.getOpenInstance();
+        const container = node || document.querySelector(`.${ModalManager.classes.base}.${ModalManager.classes.open}`);
+        if (!container) return;
+        if (container.dataset.hasFocusGuards !== "true") return;
+        [...container.querySelectorAll(`[${ModalManager.attrs.focusGuard}]`)].forEach((g) => g.remove());
+        container.removeAttribute("tabindex");
+    }
 
-        modal.classList.remove(STATE_CLASSES.isOpen);
-        if (state.type === "html") {
-            document.body.removeChild(modal);
-        }
-        this.#instances.delete(modal);
-        ScrollManager.unlock();
+    #createFocusGuard(position) {
+        const el = document.createElement("span");
+        el.setAttribute(ModalManager.attrs.focusGuard, position);
+        el.setAttribute("tabindex", "0");
+        el.addEventListener("focus", () => {
+            const focusables = this.#getFocusableElements();
+            if (!focusables.length) return;
+            const target = position === "start" ? focusables.at(-1) : focusables[0];
+            target.focus();
+        });
+        return el;
+    }
+
+    #getFocusableElements() {
+        const [node] = this.getOpenInstance();
+        if (!node) return [];
+        return [...node.querySelectorAll(
+            'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex="0"]'
+        )];
     }
 }

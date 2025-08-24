@@ -1,76 +1,71 @@
 import { FormValidator } from "@/js/modules/FormValidator.js";
-import { ModalManager } from "@/js/modules/ModalManager.js";
 import { FormProcessor } from "@/js/modules/FormProcessor.js";
-import { ATTRS, FORM_DEFAULTS } from "@/js/constants.js";
 
 export class FormHandler {
-  static attrs = ATTRS;
-  static defaults = FORM_DEFAULTS;
-
+  #modalManager;
   #processor;
-  #configCache = new WeakMap();
-  #onSubmitBound = (e) => this.#onSubmit(e);
+  #formConfigCache = new WeakMap();
 
-  constructor(modalManager = new ModalManager(), formProcessor = null) {
-    this.#processor =
-        formProcessor ||
-        new FormProcessor({
-          modalManager,
-        });
+  static attrs = {
+    formConfig: "data-js-form",
+  };
 
-    document.addEventListener("submit", this.#onSubmitBound, true);
+  constructor({ modalManager, processor } = {}) {
+    this.#modalManager = modalManager;
+    this.#processor = processor || new FormProcessor({ modalManager });
+    this.#bindEvents();
   }
 
-  #onSubmit(event) {
-    const { target: form, submitter } = event;
+  #onSubmit = (e) => this.#handleSubmit(e);
+
+  #bindEvents() {
+    document.addEventListener("submit", this.#onSubmit, true);
+  }
+
+  async #handleSubmit(event) {
+    const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
 
-    const cfg = this.#getFormConfig(form);
-    if (cfg.isNeedPreventDefault) {
-      event.preventDefault();
-    }
+    const submitter = event.submitter || this.#resolveSubmitter(form);
+    const cfg = this.#readConfig(form);
 
-    if (!FormValidator.isValidForm(form, FormHandler.attrs, cfg.isNeedValidateBeforeSubmit)) {
-      return;
-    }
+    if (cfg?.isNeedPreventDefault !== false) event.preventDefault();
 
-    this.#processor.process(form, submitter || null, cfg);
+    const needsValidation = cfg?.isNeedValidateBeforeSubmit !== false;
+    if (needsValidation && !FormValidator.isFormValid(form)) return;
+
+    await this.#processor.process(form, submitter, cfg);
   }
 
-  #getFormConfig(form) {
-    if (this.#configCache.has(form)) {
-      return this.#configCache.get(form);
-    }
+  #resolveSubmitter(form) {
+    const id = form.getAttribute("id");
+    const selectorInternal = "button[type=submit], input[type=submit]";
+    const selectorExternal = id
+        ? `${selectorInternal}[form="${CSS.escape(id)}"]`
+        : null;
+    return (
+        form.querySelector(selectorInternal) ||
+        (selectorExternal ? document.querySelector(selectorExternal) : null)
+    );
+  }
 
-    const raw = form.getAttribute(FormHandler.attrs.form) || "{}";
+  #readConfig(form) {
+    if (this.#formConfigCache.has(form)) return this.#formConfigCache.get(form);
+    const raw = form.getAttribute(FormHandler.attrs.formConfig) || "{}";
     let parsed = {};
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      parsed = {};
-    }
-
-    const d = FormHandler.defaults;
-    const merged = {
-      isNeedPreventDefault: parsed.isNeedPreventDefault ?? d.isNeedPreventDefault,
-      isNeedValidateBeforeSubmit: parsed.isNeedValidateBeforeSubmit ?? d.isNeedValidateBeforeSubmit,
-
-      request: {
-        url: parsed.request?.url ?? parsed.url ?? d.request.url,
-        method: (parsed.request?.method ?? parsed.method ?? d.request.method).toUpperCase(),
-        headers: { ...(d.request.headers || {}), ...(parsed.request?.headers || parsed.headers || {}) },
-      },
-
-      showModalAfterSuccess: parsed.showModalAfterSuccess ?? d.showModalAfterSuccess,
-      showModalAfterError: parsed.showModalAfterError ?? d.showModalAfterError,
-      isResetAfterSuccess: parsed.isResetAfterSuccess ?? d.isResetAfterSuccess,
-
-      isNeedShowBackdrop: parsed.isNeedShowBackdrop ?? d.isNeedShowBackdrop,
-      closeAfterDelaySuccess: parsed.closeAfterDelaySuccess ?? d.closeAfterDelaySuccess,
-      closeAfterDelayError: parsed.closeAfterDelayError ?? d.closeAfterDelayError,
+    try { parsed = JSON.parse(raw); } catch { parsed = {}; }
+    const normalized = {
+      url: parsed.url || form.getAttribute("action") || window.location.href,
+      method: (parsed.method || form.getAttribute("method") || "POST").toUpperCase(),
+      headers: parsed.headers || {},
+      timeoutMs: Number(parsed.timeoutMs) || 15000,
+      showModalAfterSuccess: parsed.showModalAfterSuccess,
+      showModalAfterError: parsed.showModalAfterError,
+      isResetAfterSuccess: Boolean(parsed.isResetAfterSuccess),
+      isNeedPreventDefault: parsed.isNeedPreventDefault !== false,
+      isNeedValidateBeforeSubmit: parsed.isNeedValidateBeforeSubmit !== false,
     };
-
-    this.#configCache.set(form, merged);
-    return merged;
+    this.#formConfigCache.set(form, normalized);
+    return normalized;
   }
 }
