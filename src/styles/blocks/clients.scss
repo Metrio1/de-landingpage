@@ -93,7 +93,6 @@
     font-weight: 600;
     border-bottom: var(--gridLine);
     border-right: var(--gridLine);
-    cursor: pointer;
 
     opacity: 0;
     transform: translateY(1.25rem);
@@ -121,10 +120,6 @@
       @include nthChildPattern(n, border-right, none);
       @include nthChildPattern(n, border-bottom, 1px solid var(--colorWhiteTransparent));
       @include nthLastChildPattern(1, border-bottom, none);
-    }
-
-    &:hover {
-      background-color: var(--colorLightBlue);
     }
   }
 }
