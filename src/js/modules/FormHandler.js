@@ -3,69 +3,77 @@ import { FormProcessor } from "@/js/modules/FormProcessor.js";
 
 export class FormHandler {
   #modalManager;
-  #processor;
+  #formProcessor;
   #formConfigCache = new WeakMap();
 
-  static attrs = {
+  static attributes = {
     formConfig: "data-js-form",
   };
 
   constructor({ modalManager, processor } = {}) {
     this.#modalManager = modalManager;
-    this.#processor = processor || new FormProcessor({ modalManager });
-    this.#bindEvents();
+    this.#formProcessor = processor || new FormProcessor({ modalManager });
+    this.#initEventListeners();
   }
 
-  #onSubmit = (e) => this.#handleSubmit(e);
+  #handleFormSubmit = (event) => this.#processFormSubmission(event);
 
-  #bindEvents() {
-    document.addEventListener("submit", this.#onSubmit, true);
+  #initEventListeners() {
+    document.addEventListener("submit", this.#handleFormSubmit, true);
   }
 
-  async #handleSubmit(event) {
+  async #processFormSubmission(event) {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
 
-    const submitter = event.submitter || this.#resolveSubmitter(form);
-    const cfg = this.#readConfig(form);
+    const submitButton = event.submitter || this.#findSubmitButton(form);
+    const config = this.#getFormConfig(form);
 
-    if (cfg?.isNeedPreventDefault !== false) event.preventDefault();
+    if (config?.preventDefaultOnSubmit !== false) event.preventDefault();
 
-    const needsValidation = cfg?.isNeedValidateBeforeSubmit !== false;
-    if (needsValidation && !FormValidator.isFormValid(form)) return;
+    const shouldValidate = config?.validateBeforeSubmit !== false;
+    if (shouldValidate && !FormValidator.isFormValid(form)) return;
 
-    await this.#processor.process(form, submitter, cfg);
+    await this.#formProcessor.process(form, submitButton, config);
   }
 
-  #resolveSubmitter(form) {
+  #findSubmitButton(form) {
     const id = form.getAttribute("id");
     const selectorInternal = "button[type=submit], input[type=submit]";
     const selectorExternal = id
         ? `${selectorInternal}[form="${CSS.escape(id)}"]`
         : null;
+
     return (
         form.querySelector(selectorInternal) ||
         (selectorExternal ? document.querySelector(selectorExternal) : null)
     );
   }
 
-  #readConfig(form) {
+  #getFormConfig(form) {
     if (this.#formConfigCache.has(form)) return this.#formConfigCache.get(form);
-    const raw = form.getAttribute(FormHandler.attrs.formConfig) || "{}";
-    let parsed = {};
-    try { parsed = JSON.parse(raw); } catch { parsed = {}; }
-    const normalized = {
-      url: parsed.url || form.getAttribute("action") || window.location.href,
-      method: (parsed.method || form.getAttribute("method") || "POST").toUpperCase(),
-      headers: parsed.headers || {},
-      timeoutMs: Number(parsed.timeoutMs) || 15000,
-      showModalAfterSuccess: parsed.showModalAfterSuccess,
-      showModalAfterError: parsed.showModalAfterError,
-      isResetAfterSuccess: Boolean(parsed.isResetAfterSuccess),
-      isNeedPreventDefault: parsed.isNeedPreventDefault !== false,
-      isNeedValidateBeforeSubmit: parsed.isNeedValidateBeforeSubmit !== false,
+
+    const rawConfig = form.getAttribute(FormHandler.attributes.formConfig) || "{}";
+    let parsedConfig = {};
+    try {
+      parsedConfig = JSON.parse(rawConfig);
+    } catch {
+      parsedConfig = {};
+    }
+
+    const normalizedConfig = {
+      url: parsedConfig.url || form.getAttribute("action") || window.location.href,
+      method: (parsedConfig.method || form.getAttribute("method") || "POST").toUpperCase(),
+      headers: parsedConfig.headers || {},
+      timeoutMs: Number(parsedConfig.timeoutMs) || 15000,
+      successModalId: parsedConfig.showModalAfterSuccess,
+      errorModalId: parsedConfig.showModalAfterError,
+      resetFormOnSuccess: Boolean(parsedConfig.isResetAfterSuccess),
+      preventDefaultOnSubmit: parsedConfig.isNeedPreventDefault !== false,
+      validateBeforeSubmit: parsedConfig.isNeedValidateBeforeSubmit !== false,
     };
-    this.#formConfigCache.set(form, normalized);
-    return normalized;
+
+    this.#formConfigCache.set(form, normalizedConfig);
+    return normalizedConfig;
   }
 }

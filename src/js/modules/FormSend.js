@@ -22,39 +22,39 @@ export class FormSend {
         try {
             const response = await this.#fetchWithTimeout(request);
             const payload = await this.#parseJson(response);
-            this.#onSuccess({ form, successModal, resetOnSuccess });
+            this.#handleSuccess({ form, successModal, resetOnSuccess });
             return payload;
         } catch (err) {
-            this.#onError({ errorModal });
+            this.#handleError({ errorModal });
             throw err;
         }
     }
 
     #buildRequest(formData) {
-        const init = {
+        const requestInit = {
             method: this.#method,
             headers: { Accept: "application/json", ...this.#headers },
         };
 
         if (this.#method === "GET") {
             const url = new URL(this.#url, window.location.origin);
-            const params = new URLSearchParams(formData);
-            url.search = params.toString();
-            return { url: url.toString(), init };
+            url.search = new URLSearchParams(formData).toString();
+            return { url: url.toString(), init: requestInit };
         }
 
-        return { url: this.#url, init: { ...init, body: formData } };
+        return { url: this.#url, init: { ...requestInit, body: formData } };
     }
 
     async #fetchWithTimeout({ url, init }) {
         const controller = new AbortController();
-        const id = window.setTimeout(() => controller.abort(), this.#timeoutMs);
+        const timerId = window.setTimeout(() => controller.abort(), this.#timeoutMs);
+
         try {
-            const res = await fetch(url, { ...init, signal: controller.signal });
-            if (!res.ok) throw new Error(String(res.status || "NETWORK"));
-            return res;
+            const response = await fetch(url, { ...init, signal: controller.signal });
+            if (!response.ok) throw new Error(String(response.status || "NETWORK"));
+            return response;
         } finally {
-            window.clearTimeout(id);
+            window.clearTimeout(timerId);
         }
     }
 
@@ -66,20 +66,27 @@ export class FormSend {
         }
     }
 
-    #onSuccess({ form, successModal, resetOnSuccess }) {
+    #handleSuccess({ form, successModal, resetOnSuccess }) {
         if (resetOnSuccess) form.reset();
-        if (successModal) this.#openModal(successModal, false, 2000);
+        if (successModal) this.#showModal(successModal, false, 2000);
+
         ScrollManager.unlock();
         form.dispatchEvent(new CustomEvent("form:success", { bubbles: true }));
     }
 
-    #onError({ errorModal }) {
-        if (errorModal) this.#openModal(errorModal, true, 3000);
+    #handleError({ errorModal }) {
+        if (errorModal) this.#showModal(errorModal, true, 3000);
+
         ScrollManager.unlock();
         document.dispatchEvent(new CustomEvent("form:error", { bubbles: true }));
     }
 
-    #openModal(src, showBackdrop, closeAfterMs) {
-        this.#modalManager.open({ src, type: "selector", showBackdrop, autoCloseAfterMs: closeAfterMs });
+    #showModal(selectorOrHtml, showBackdrop, autoCloseAfterMs) {
+        this.#modalManager.open({
+            src: selectorOrHtml,
+            type: "selector",
+            showBackdrop,
+            autoCloseAfterMs,
+        });
     }
 }

@@ -1,67 +1,68 @@
 export class SectionAnimator {
-    static attrs = {
-        services: "data-js-services",
+    static dataAttrs = {
+        servicesSection: "data-js-services",
         servicesTitle: "data-js-services-title",
         servicesItem: "data-js-services-item",
 
-        clients: "data-js-clients",
+        clientsSection: "data-js-clients",
         clientsTitle: "data-js-clients-title",
         clientsDescription: "data-js-clients-description",
         clientsItem: "data-js-clients-item",
 
-        contacts: "data-js-contacts",
+        contactsSection: "data-js-contacts",
         contactsTitle: "data-js-contacts-title",
         contactsDescription: "data-js-contacts-description",
         contactsButton: "data-js-contacts-button",
         contactsColumn: "data-js-contacts-column",
     };
 
-    static classes = { animate: "animate" };
+    static classNames = { animate: "animate" };
 
     #observer = null;
 
-    constructor() {
-        this.#observer = new IntersectionObserver(this.#onIntersect, { threshold: 0.15 });
-        this.#register(`[${SectionAnimator.attrs.services}]`, (section) => this.#animateServices(section));
-        this.#register(`[${SectionAnimator.attrs.clients}]`, (section) => this.#animateClients(section));
-        this.#register(`[${SectionAnimator.attrs.contacts}]`, (section) => this.#animateContacts(section));
+    constructor({ threshold = 0.15, root = null, rootMargin = "0px" } = {}) {
+        this.#observer = new IntersectionObserver(this.#onIntersect, { threshold, root, rootMargin });
+
+        this.#registerSection(`[${SectionAnimator.dataAttrs.servicesSection}]`, (node) => this.#revealServices(node));
+        this.#registerSection(`[${SectionAnimator.dataAttrs.clientsSection}]`, (node) => this.#revealClients(node));
+        this.#registerSection(`[${SectionAnimator.dataAttrs.contactsSection}]`, (node) => this.#revealContacts(node));
     }
 
-    #onIntersect = (entries, obs) => {
+    #onIntersect = (entries, observer) => {
         for (const entry of entries) {
             if (entry.isIntersecting) {
                 const cb = entry.target.__onReveal;
                 if (typeof cb === "function") cb(entry.target);
-                obs.unobserve(entry.target);
+                observer.unobserve(entry.target);
             }
         }
     };
 
-    #register(selector, onReveal) {
+    #registerSection(selector, onReveal) {
         const node = document.querySelector(selector);
         if (!node) return;
         node.__onReveal = onReveal;
         this.#observer.observe(node);
     }
 
-    #animateServices(section) {
-        section.querySelector(`[${SectionAnimator.attrs.servicesTitle}]`)?.classList.add(SectionAnimator.classes.animate);
-        const items = section.querySelectorAll(`[${SectionAnimator.attrs.servicesItem}]`);
-        items.forEach((el, i) => setTimeout(() => el.classList.add(SectionAnimator.classes.animate), i * 200));
+    #revealServices(section) {
+        section.querySelector(`[${SectionAnimator.dataAttrs.servicesTitle}]`)?.classList.add(SectionAnimator.classNames.animate);
+        const items = section.querySelectorAll(`[${SectionAnimator.dataAttrs.servicesItem}]`);
+        items.forEach((el, i) => setTimeout(() => el.classList.add(SectionAnimator.classNames.animate), i * 200));
     }
 
-    #animateClients(section) {
-        section.querySelector(`[${SectionAnimator.attrs.clientsTitle}]`)?.classList.add(SectionAnimator.classes.animate);
-        section.querySelector(`[${SectionAnimator.attrs.clientsDescription}]`)?.classList.add(SectionAnimator.classes.animate);
-        const items = section.querySelectorAll(`[${SectionAnimator.attrs.clientsItem}]`);
-        items.forEach((el, i) => setTimeout(() => el.classList.add(SectionAnimator.classes.animate), i * 200));
+    #revealClients(section) {
+        section.querySelector(`[${SectionAnimator.dataAttrs.clientsTitle}]`)?.classList.add(SectionAnimator.classNames.animate);
+        section.querySelector(`[${SectionAnimator.dataAttrs.clientsDescription}]`)?.classList.add(SectionAnimator.classNames.animate);
+        const items = section.querySelectorAll(`[${SectionAnimator.dataAttrs.clientsItem}]`);
+        items.forEach((el, i) => setTimeout(() => el.classList.add(SectionAnimator.classNames.animate), i * 200));
     }
 
-    #animateContacts(section) {
-        section.querySelector(`[${SectionAnimator.attrs.contactsTitle}]`)?.classList.add(SectionAnimator.classes.animate);
-        setTimeout(() => section.querySelector(`[${SectionAnimator.attrs.contactsDescription}]`)?.classList.add(SectionAnimator.classes.animate), 200);
-        setTimeout(() => section.querySelector(`[${SectionAnimator.attrs.contactsButton}]`)?.classList.add(SectionAnimator.classes.animate), 400);
-        const cols = section.querySelectorAll(`[${SectionAnimator.attrs.contactsColumn}]`);
-        cols.forEach((el, i) => setTimeout(() => el.classList.add(SectionAnimator.classes.animate), 600 + i * 200));
+    #revealContacts(section) {
+        section.querySelector(`[${SectionAnimator.dataAttrs.contactsTitle}]`)?.classList.add(SectionAnimator.classNames.animate);
+        setTimeout(() => section.querySelector(`[${SectionAnimator.dataAttrs.contactsDescription}]`)?.classList.add(SectionAnimator.classNames.animate), 200);
+        setTimeout(() => section.querySelector(`[${SectionAnimator.dataAttrs.contactsButton}]`)?.classList.add(SectionAnimator.classNames.animate), 400);
+        const cols = section.querySelectorAll(`[${SectionAnimator.dataAttrs.contactsColumn}]`);
+        cols.forEach((el, i) => setTimeout(() => el.classList.add(SectionAnimator.classNames.animate), 600 + i * 200));
     }
 }

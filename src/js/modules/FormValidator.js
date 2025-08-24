@@ -1,71 +1,66 @@
 export class FormValidator {
-    static classes = { invalid: "isInvalid", inputInvalid: "input--invalid", valid: "isValid" };
+    static classNames = {
+        rowInvalid: "isInvalid",
+        inputInvalid: "input--invalid",
+        rowValid: "isValid",
+    };
 
-    static attrs = {
-        required: "data-js-input-required",
-        requiredMode: "data-js-input-required-mode",
-        errorMsg: "data-js-error-msg",
-        row: "data-js-validate-row",
+    static dataAttrs = {
+        requiredType: "data-js-input-required",
+        triggerMode: "data-js-input-required-mode",
+        errorMessage: "data-js-error-msg",
+        validationRow: "data-js-validate-row",
     };
 
     #debounceTimers = new WeakMap();
 
     constructor() {
-        this.#bindEvents();
+        this.#attachGlobalListeners();
     }
-
-    #onBlur = (e) => this.#dispatchValidation(e);
-    #onFocus = (e) => this.#dispatchValidation(e);
-    #onInput = (e) => this.#dispatchValidation(e);
 
     static isFormValid(form) {
-        let ok = true;
-        for (const el of form.elements) {
-            if (el instanceof HTMLElement && el.matches(`[${FormValidator.attrs.required}]`)) {
-                if (!FormValidator.validate(el)) ok = false;
+        let allValid = true;
+        for (const element of form.elements) {
+            if (element instanceof HTMLElement && element.matches(`[${FormValidator.dataAttrs.requiredType}]`)) {
+                if (!FormValidator.validate(element)) allValid = false;
             }
         }
-        return ok;
+        return allValid;
     }
 
-    static validate(el) {
-        const type = el.getAttribute(FormValidator.attrs.required) || "text";
-        const validators = {
-            name: (v) => FormValidator.#validateText(v),
-            text: (v) => FormValidator.#validateText(v),
-            email: (v) => FormValidator.#validateEmail(v),
-        };
-        const messages = {
-            name: "Введите корректное имя",
-            email: "Введите корректный адрес электронной почты",
-            text: "Это поле обязательно для заполнения",
-        };
-        const value = "value" in el ? String(el.value) : "";
-        const isValid = (validators[type] || validators.text)(value);
-        const row = el.closest(`[${FormValidator.attrs.row}]`);
-        const msgNode = row?.querySelector(`[${FormValidator.attrs.errorMsg}]`);
-        if (isValid) FormValidator.#hideError(row, msgNode, el);
-        else FormValidator.#showError(row, msgNode, messages[type] || messages.text, el);
+    static validate(element) {
+        const type = element.getAttribute(FormValidator.dataAttrs.requiredType) || "text";
+        const validatorFn = FormValidator.#selectValidator(type);
+        const messages = FormValidator.#defaultMessages();
+        const value = "value" in element ? String(element.value) : "";
+
+        const isValid = validatorFn(value);
+        const row = element.closest(`[${FormValidator.dataAttrs.validationRow}]`);
+        const msgNode = row?.querySelector(`[${FormValidator.dataAttrs.errorMessage}]`);
+
+        if (isValid) FormValidator.#clearFieldError(row, msgNode, element);
+        else FormValidator.#showFieldError(row, msgNode, messages[type] || messages.text, element);
+
         return isValid;
     }
 
-    #bindEvents() {
-        document.addEventListener("blur", this.#onBlur, true);
-        document.addEventListener("focus", this.#onFocus, true);
-        document.addEventListener("input", this.#onInput, true);
+    #attachGlobalListeners() {
+        document.addEventListener("blur", this.#handleFieldEvent, true);
+        document.addEventListener("focus", this.#handleFieldEvent, true);
+        document.addEventListener("input", this.#handleFieldEvent, true);
     }
 
-    #dispatchValidation(event) {
-        const el = event.target?.closest?.(`[${FormValidator.attrs.required}]`);
+    #handleFieldEvent = (event) => {
+        const el = event.target?.closest?.(`[${FormValidator.dataAttrs.requiredType}]`);
         if (!el) return;
 
-        const modes = (el.getAttribute(FormValidator.attrs.requiredMode) || "")
+        const modes = (el.getAttribute(FormValidator.dataAttrs.triggerMode) || "")
             .split(/\s*,\s*/)
             .filter(Boolean);
 
         if (event.type === "input") {
-            const type = el.getAttribute(FormValidator.attrs.required);
-            if (type === "email") {
+            const requiredType = el.getAttribute(FormValidator.dataAttrs.requiredType);
+            if (requiredType === "email") {
                 this.#debounce(el, () => FormValidator.validate(el), 300);
             } else {
                 FormValidator.validate(el);
@@ -74,7 +69,7 @@ export class FormValidator {
         }
 
         if (modes.includes(event.type)) FormValidator.validate(el);
-    }
+    };
 
     #debounce(el, fn, delay) {
         window.clearTimeout(this.#debounceTimers.get(el));
@@ -82,23 +77,40 @@ export class FormValidator {
         this.#debounceTimers.set(el, id);
     }
 
-    static #validateEmail(v) {
-        return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v.trim());
+    static #selectValidator(type) {
+        const validators = {
+            name: (v) => FormValidator.#validateNonEmptyText(v),
+            text: (v) => FormValidator.#validateNonEmptyText(v),
+            email: (v) => FormValidator.#validateEmail(v),
+        };
+        return validators[type] || validators.text;
     }
 
-    static #validateText(v) {
-        return v.trim().length > 0;
+    static #defaultMessages() {
+        return {
+            name: "Введите корректное имя",
+            email: "Введите корректный адрес электронной почты",
+            text: "Это поле обязательно для заполнения",
+        };
     }
 
-    static #showError(row, msgNode, message, input) {
-        row?.classList.add(FormValidator.classes.invalid);
-        input?.classList.add(FormValidator.classes.inputInvalid);
+    static #validateEmail(value) {
+        return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value.trim());
+    }
+
+    static #validateNonEmptyText(value) {
+        return value.trim().length > 0;
+    }
+
+    static #showFieldError(row, msgNode, message, input) {
+        row?.classList.add(FormValidator.classNames.rowInvalid);
+        input?.classList.add(FormValidator.classNames.inputInvalid);
         if (msgNode) msgNode.textContent = message;
     }
 
-    static #hideError(row, msgNode, input) {
-        row?.classList.remove(FormValidator.classes.invalid);
-        input?.classList.remove(FormValidator.classes.inputInvalid);
+    static #clearFieldError(row, msgNode, input) {
+        row?.classList.remove(FormValidator.classNames.rowInvalid);
+        input?.classList.remove(FormValidator.classNames.inputInvalid);
         if (msgNode) msgNode.textContent = "";
     }
 }

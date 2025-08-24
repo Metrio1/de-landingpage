@@ -1,56 +1,62 @@
 import { FormSend } from "@/js/modules/FormSend.js";
 
 export class FormProcessor {
-    #inFlight = new WeakSet();
+    #activeForms = new WeakSet();
     #modalManager;
     #senderFactory;
-
-    static attrs = {};
 
     constructor({ modalManager, senderFactory } = {}) {
         this.#modalManager = modalManager;
         this.#senderFactory = senderFactory;
     }
 
-    async process(form, submitter, config) {
-        if (!form || this.#inFlight.has(form)) return;
+    async process(form, submitButton, config) {
+        if (!form || this.#activeForms.has(form)) return;
 
-        this.#disable(form, submitter);
+        this.#lockForm(form, submitButton);
 
-        const sender = this.#resolveSender(config);
+        const sender = this.#createSender(config);
 
         try {
-            const data = new FormData(form);
-            await sender.send(form, data, {
-                successModal: config.showModalAfterSuccess,
-                errorModal: config.showModalAfterError,
-                resetOnSuccess: Boolean(config.isResetAfterSuccess),
+            const formData = new FormData(form);
+            await sender.send(form, formData, {
+                successModal: config.successModalId,
+                errorModal: config.errorModalId,
+                resetOnSuccess: Boolean(config.resetFormOnSuccess),
             });
             form.dispatchEvent(new CustomEvent("form:submitted", { bubbles: true }));
         } finally {
-            this.#enable(form, submitter);
+            this.#unlockForm(form, submitButton);
         }
     }
 
-    #resolveSender(cfg) {
-        if (typeof this.#senderFactory === "function") return this.#senderFactory(cfg);
-        return new FormSend({ url: cfg.url, method: cfg.method, headers: cfg.headers || {}, modalManager: this.#modalManager, timeoutMs: cfg.timeoutMs });
+    #createSender(config) {
+        if (typeof this.#senderFactory === "function") {
+            return this.#senderFactory(config);
+        }
+        return new FormSend({
+            url: config.url,
+            method: config.method,
+            headers: config.headers || {},
+            modalManager: this.#modalManager,
+            timeoutMs: config.timeoutMs,
+        });
     }
 
-    #disable(form, submitter) {
-        this.#inFlight.add(form);
-        if (submitter) {
-            submitter.setAttribute("aria-busy", "true");
-            submitter.disabled = true;
+    #lockForm(form, submitButton) {
+        this.#activeForms.add(form);
+        if (submitButton) {
+            submitButton.setAttribute("aria-busy", "true");
+            submitButton.disabled = true;
         }
         form.setAttribute("aria-busy", "true");
     }
 
-    #enable(form, submitter) {
-        this.#inFlight.delete(form);
-        if (submitter) {
-            submitter.removeAttribute("aria-busy");
-            submitter.disabled = false;
+    #unlockForm(form, submitButton) {
+        this.#activeForms.delete(form);
+        if (submitButton) {
+            submitButton.removeAttribute("aria-busy");
+            submitButton.disabled = false;
         }
         form.removeAttribute("aria-busy");
     }
